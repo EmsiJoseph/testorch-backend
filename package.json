@@ -23,7 +23,13 @@
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.1",
     "@nestjs/websockets": "^10.4.1",
+    "@types/helmet": "^4.0.0",
+    "@types/newrelic": "^9.14.4",
+    "dotenv": "^16.4.5",
+    "helmet": "^7.1.0",
+    "newrelic": "^12.3.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "xml2js": "^0.6.2"

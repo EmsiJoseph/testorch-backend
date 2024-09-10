@@ -26,6 +26,7 @@ export class TestPlanService {
     }
 
     const overriddenXml = builder.buildObject(parsedXml);
+    // TODO: Configure the path to the overridden test plan
     const overriddenPlanPath = `/path/to/overridden/testplans/${planId}-overridden.jmx`;
 
     await fs.writeFile(overriddenPlanPath, overriddenXml, "utf8");
