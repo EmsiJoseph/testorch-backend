@@ -1,14 +1,13 @@
 import { Module } from "@nestjs/common";
-import { LoadGeneratorModule } from "../load-generator/load-generator.module";
-import { TestPlanModule } from "../test-plan/test-plan.module";
-import { MonitoringModule } from "../monitoring/monitoring.module";
-import { WebsocketGateway } from "../websocket/websocket.gateway";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { TeamManagementModule } from "../team-management/team-management.module";
+import { KubernetesManagementModule } from "../kubernetes-management/kubernetes-management.module";
+import { LoggingModule } from "../logging/logging.module";
 
 @Module({
   controllers: [AppController],
-  imports: [LoadGeneratorModule, TestPlanModule, MonitoringModule],
-  providers: [WebsocketGateway, AppService],
+  imports: [TeamManagementModule, KubernetesManagementModule, LoggingModule],
+  providers: [AppService], // No need to add KubernetesManagementService here
 })
 export class AppModule {}
