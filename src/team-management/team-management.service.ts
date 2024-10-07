@@ -1,22 +1,30 @@
 import { Injectable, Logger } from "@nestjs/common";
 import axios, { AxiosResponse } from "axios";
+import { KubernetesManagementService } from "../kubernetes-management/kubernetes-management.service";
 
 @Injectable()
 export class TeamManagementService {
-  private readonly influxUrl = process.env.INFLUX_URL || "";
-  private readonly adminToken = process.env.INFLUX_ADMIN_TOKEN || "";
   private readonly logger = new Logger(TeamManagementService.name);
 
+  private influxdbToken: string;
+  private influxdbUrl: string;
+
+  constructor(
+    private readonly kubernetestManagementService: KubernetesManagementService,
+  ) {
+    this.influxdbToken = "e82a5d46-213b-484d-b745-aa01c4791f32";
+    this.influxdbUrl = "http://localhost:8086";
+  }
   /**
    * Creates a new team and an associated InfluxDB organization.
    * @param teamName The name of the team to be created.
    * @returns The details of the created team and InfluxDB organization.
    */
   async createTeam(teamName: string): Promise<any> {
-    console.log("teamName", teamName);
     // Logic to create the team entity in your application (e.g., save to DB)
     const team = { name: teamName }; // Simulate team creation for demonstration
-
+    this.logger.log(`Influxdburl: ${this.influxdbUrl}`);
+    this.logger.log(`InfluxdbToken: ${this.influxdbToken}`);
     // Create the corresponding InfluxDB organization
     const influxOrg = await this.createInfluxDBOrg(teamName);
 
@@ -36,13 +44,13 @@ export class TeamManagementService {
    * @returns The created InfluxDB organization object.
    */
   private async createInfluxDBOrg(orgName: string): Promise<any> {
-    const orgUrl = `${this.influxUrl}/api/v2/orgs`;
+    const orgUrl = `http://localhost:8086/api/v2/orgs`;
 
     try {
       const response: AxiosResponse = await axios.post(
         orgUrl,
         { name: orgName },
-        { headers: { Authorization: `Token ${this.adminToken}` } },
+        { headers: { Authorization: `Token ${this.influxdbToken}` } },
       );
       this.logger.log(
         `InfluxDB organization '${orgName}' created with ID: ${response.data.id}`,

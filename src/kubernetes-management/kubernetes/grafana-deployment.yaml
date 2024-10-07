@@ -18,12 +18,28 @@ spec:
           image: grafana/grafana:latest
           ports:
             - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: grafana-env-secrets
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
       volumes:
         - name: grafana-storage
-          emptyDir: {}  
+          persistentVolumeClaim: # Use a PVC instead of emptyDir for persistence
+            claimName: grafana-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
@@ -31,9 +47,10 @@ metadata:
   name: grafana
   namespace: monitoring
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
     - port: 3000
       targetPort: 3000
+      protocol: TCP
   selector:
     app: grafana

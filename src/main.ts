@@ -3,7 +3,7 @@ import { Logger } from "@nestjs/common";
 import { IoAdapter } from "@nestjs/platform-socket.io";
 import * as helmet from "helmet";
 
-import { AppModule } from "./app.module/app.module";
+import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./all-exceptions.filter";
 
 async function bootstrap() {
@@ -29,6 +29,8 @@ async function bootstrap() {
   const port = process.env.PORT || 5000;
 
   const server = await app.listen(port);
+
+
 
   const gracefulShutdown = () => {
     console.log("Shutting down gracefully...");
@@ -61,8 +63,13 @@ async function bootstrap() {
     // Log and handle the error accordingly
   });
 
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
+
   Logger.log(
-    `🚀 LG-Orchestrator is running on: http://localhost:${port}/${globalPrefix}`,
+    `🚀 Testorch-Backend is running on: http://localhost:${port}/${globalPrefix}`,
   );
 }
 
