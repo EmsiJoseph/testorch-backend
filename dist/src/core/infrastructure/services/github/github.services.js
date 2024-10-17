@@ -18,7 +18,7 @@ let GitHubService = class GitHubService {
     githubApiUrl = 'https://api.github.com/repos/AshleyPojol/centralized-testorch-repository/contents';
     owner = 'AshleyPojol';
     repo = 'centralized-testorch-repository';
-    token = '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';
+    token = '';
     constructor(httpService) {
         this.httpService = httpService;
     }

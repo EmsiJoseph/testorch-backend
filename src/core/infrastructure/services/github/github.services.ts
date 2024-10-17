@@ -7,7 +7,7 @@ export class GitHubService {
   private readonly githubApiUrl = 'https://api.github.com/repos/AshleyPojol/centralized-testorch-repository/contents';
   private readonly owner = 'AshleyPojol';
   private readonly repo = 'centralized-testorch-repository';
-  private readonly token = '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';
+  private readonly token = '';
 
   constructor(private readonly httpService: HttpService) {}
   async getTestPlans(team: string, project: string): Promise<any> {
