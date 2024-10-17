@@ -7,14 +7,12 @@ export class GitHubService {
   private readonly githubApiUrl = 'https://api.github.com/repos/AshleyPojol/centralized-testorch-repository/contents';
   private readonly owner = 'AshleyPojol';
   private readonly repo = 'centralized-testorch-repository';
-  private readonly token = '';  // Use environment variables for security
+  private readonly token = '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';
 
   constructor(private readonly httpService: HttpService) {}
-
-  // Fetch the list of test plans for a team and project
   async getTestPlans(team: string, project: string): Promise<any> {
     const path = `teams/${team}/projects/${project}/test-plans`;
-    const url = `${this.githubApiUrl}/${path}`;  // Corrected URL
+    const url = `${this.githubApiUrl}/${path}`;  
 
     try {
       const response = await firstValueFrom(this.httpService.get(url, {
@@ -28,12 +26,11 @@ export class GitHubService {
     }
   }
 
-  // Delete a test plan from GitHub
   async deleteTestPlan(team: string, project: string, plan: string, sha: string): Promise<any> {
     const path = `teams/${team}/projects/${project}/test-plans/${plan}`;
     const url = `${this.githubApiUrl}/${path}`;
   
-    console.log(`Attempting to delete test plan at URL: ${url}`);
+    console.log(`Attempting to Delete Test Plan at URL: ${url}`);
     console.log(`Using SHA: ${sha}`);
   
     try {
@@ -42,7 +39,7 @@ export class GitHubService {
           Authorization: `token ${this.token}`,
         },
         data: {
-          message: `Delete test plan: ${plan}`,
+          message: `Delete Test Plan: ${plan}`,
           sha: sha,
         },
       }));
@@ -51,8 +48,8 @@ export class GitHubService {
       return response.data;
   
     } catch (error) {
-      console.error('Error deleting test plan:', error.response?.data || error.message);
-      throw new HttpException('Failed to delete test plan from GitHub', HttpStatus.INTERNAL_SERVER_ERROR);
+      console.error('Error Deleting Test Plan:', error.response?.data || error.message);
+      throw new HttpException('Failed to Delete Test Plan from GitHub', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
   

@@ -18,7 +18,7 @@ let GitHubService = class GitHubService {
     githubApiUrl = 'https://api.github.com/repos/AshleyPojol/centralized-testorch-repository/contents';
     owner = 'AshleyPojol';
     repo = 'centralized-testorch-repository';
-    token = '';
+    token = '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';
     constructor(httpService) {
         this.httpService = httpService;
     }
@@ -40,7 +40,7 @@ let GitHubService = class GitHubService {
     async deleteTestPlan(team, project, plan, sha) {
         const path = `teams/${team}/projects/${project}/test-plans/${plan}`;
         const url = `${this.githubApiUrl}/${path}`;
-        console.log(`Attempting to delete test plan at URL: ${url}`);
+        console.log(`Attempting to Delete Test Plan at URL: ${url}`);
         console.log(`Using SHA: ${sha}`);
         try {
             const response = await (0, rxjs_1.firstValueFrom)(this.httpService.delete(url, {
@@ -48,7 +48,7 @@ let GitHubService = class GitHubService {
                     Authorization: `token ${this.token}`,
                 },
                 data: {
-                    message: `Delete test plan: ${plan}`,
+                    message: `Delete Test Plan: ${plan}`,
                     sha: sha,
                 },
             }));
@@ -56,8 +56,8 @@ let GitHubService = class GitHubService {
             return response.data;
         }
         catch (error) {
-            console.error('Error deleting test plan:', error.response?.data || error.message);
-            throw new common_1.HttpException('Failed to delete test plan from GitHub', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+            console.error('Error Deleting Test Plan:', error.response?.data || error.message);
+            throw new common_1.HttpException('Failed to Delete Test Plan from GitHub', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 };

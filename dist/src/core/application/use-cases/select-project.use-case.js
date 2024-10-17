@@ -9,28 +9,27 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SelectTestPlanUseCase = void 0;
+exports.SelectProjectUseCase = void 0;
 const common_1 = require("@nestjs/common");
-const test_plan_repository_1 = require("../../infrastructure/repositories/test-plan/test-plan.repository");
-let SelectTestPlanUseCase = class SelectTestPlanUseCase {
-    testPlanRepo;
-    constructor(testPlanRepo) {
-        this.testPlanRepo = testPlanRepo;
+const project_repository_1 = require("../../infrastructure/repositories/project/project.repository");
+let SelectProjectUseCase = class SelectProjectUseCase {
+    projectRepo;
+    constructor(projectRepo) {
+        this.projectRepo = projectRepo;
     }
     async execute(team, project) {
-        const testplans = await this.testPlanRepo.getTestPlans(team, project);
-        const modifiedTestPlans = testplans.map((project) => ({
-            testplanName: project.name,
-            testplanPath: project.path,
-            testplanSize: project.size,
-            testplanID: project.sha,
+        const projects = await this.projectRepo.getProjects(team, project);
+        const modifiedProjects = projects.map((project) => ({
+            projectName: project.name,
+            projectPath: project.path,
+            projectID: project.sha,
         }));
-        return modifiedTestPlans;
+        return modifiedProjects;
     }
 };
-exports.SelectTestPlanUseCase = SelectTestPlanUseCase;
-exports.SelectTestPlanUseCase = SelectTestPlanUseCase = __decorate([
+exports.SelectProjectUseCase = SelectProjectUseCase;
+exports.SelectProjectUseCase = SelectProjectUseCase = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [test_plan_repository_1.TestPlanRepository])
-], SelectTestPlanUseCase);
-//# sourceMappingURL=select-test-plan.use-case.js.map
+    __metadata("design:paramtypes", [project_repository_1.ProjectRepository])
+], SelectProjectUseCase);
+//# sourceMappingURL=select-project.use-case.js.map

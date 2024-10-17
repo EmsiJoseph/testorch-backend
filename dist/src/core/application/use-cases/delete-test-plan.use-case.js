@@ -28,8 +28,8 @@ let DeleteTestPlanUseCase = class DeleteTestPlanUseCase {
             return response;
         }
         catch (error) {
-            console.error('Error deleting test plan:', error);
-            throw new common_1.HttpException('Failed to delete test plan from repository', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
+            console.error('Error Deleting Test Plan:', error);
+            throw new common_1.HttpException('Failed to Delete Test Plan from Repository', common_1.HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 };

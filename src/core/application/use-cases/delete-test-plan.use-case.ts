@@ -14,12 +14,11 @@ export class DeleteTestPlanUseCase {
 
     try {
       const response = await this.testPlanRepo.deleteTestPlan(team, project, plan, sha);
-      // Log the response from the repository
       console.log('Delete Test Plan Response:', response);
       return response;
     } catch (error) {
-      console.error('Error deleting test plan:', error);
-      throw new HttpException('Failed to delete test plan from repository', HttpStatus.INTERNAL_SERVER_ERROR);
+      console.error('Error Deleting Test Plan:', error);
+      throw new HttpException('Failed to Delete Test Plan from Repository', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

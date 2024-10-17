@@ -22,7 +22,7 @@ let TestPlanController = class TestPlanController {
     constructor(selectTestPlanUseCase, deleteTestPlanUseCase) {
         this.selectTestPlanUseCase = selectTestPlanUseCase;
         this.deleteTestPlanUseCase = deleteTestPlanUseCase;
-        console.log('TestPlanController initialized');
+        console.log('⭐ TestPlanController initialized');
     }
     async selectTestPlans(team, project) {
         return this.selectTestPlanUseCase.execute(team, project);

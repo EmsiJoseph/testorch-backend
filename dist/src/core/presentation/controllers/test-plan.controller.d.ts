@@ -4,6 +4,6 @@ export declare class TestPlanController {
     private readonly selectTestPlanUseCase;
     private readonly deleteTestPlanUseCase;
     constructor(selectTestPlanUseCase: SelectTestPlanUseCase, deleteTestPlanUseCase: DeleteTestPlanUseCase);
-    selectTestPlans(team: string, project: string): Promise<import("../../domain/models/test-plan.entity").TestPlan[]>;
+    selectTestPlans(team: string, project: string): Promise<any>;
     deleteTestPlan(team: string, project: string, plan: string, sha: string): Promise<any>;
 }
