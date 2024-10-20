@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GitHubService {
-  private readonly githubApiUrl = 'https://api.github.com/repos/AshleyPojol/centralized-testorch-repository/contents';
+  private readonly githubApiUrl: string;
   private readonly owner: string;
   private readonly repo: string;
   private readonly token: string;
@@ -16,6 +16,7 @@ export class GitHubService {
     this.repo = this.configService.get('GITHUB_TEST_PLAN_REPO');
     this.token = this.configService.get('GITHUB_ACCESS_TOKEN');
     this.owner = this.configService.get('GITHUB_TEST_PLAN_REPO_OWNER');
+    this.githubApiUrl = this.configService.get('GITHUB_API_URL');
   }
 
   // Fetch the list of test plans for a team and project
