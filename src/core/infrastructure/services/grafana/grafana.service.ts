@@ -43,9 +43,7 @@ export class GrafanaService implements IGrafanaService, OnModuleInit {
         );
     }
 
-    @OnEvent("kubernetes.init", {async: true})
     async deployGrafanaIfNotExists(): Promise<string> {
-        this.logger.log("Received 'kubernetes.init' event, deploying Grafana...");
         const grafanaYaml = path.join(
             process.cwd(),
             "src",
@@ -77,6 +75,7 @@ export class GrafanaService implements IGrafanaService, OnModuleInit {
             namespace,
             "Grafana",
         );
+
 
         this.logger.log(`Grafana Deployment Information:
       - URL: ${this.grafanaUrl}

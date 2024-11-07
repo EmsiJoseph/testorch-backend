@@ -1,9 +1,9 @@
-import {NewUser, User} from "../../../domain/models/user";
+import { UserInsertType, UserSelectType } from 'src/core/domain/models/user';
 
 export const USERS_REPOSITORY_TOKEN = Symbol('IUsersRepository');
 
 export interface IUsersRepository {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByEmail(username: string): Promise<User | undefined>;
-  createUser(input: NewUser): Promise<User>;
+  createUser(input: UserInsertType): Promise<UserSelectType>;
+  getUserByEmail(email: string): Promise<UserSelectType | undefined>;
+  getUser(id: string): Promise<UserSelectType | undefined>;
 }

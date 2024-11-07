@@ -15,6 +15,7 @@ import { GrafanaService } from "../grafana/grafana.service";
 import { InfluxdbService } from "../influxdb/influxdb.service";
 import { JmeterService } from "../jmeter/jmeter.service";
 import { KubernetesHttpError } from "../../../domain/errors/common";
+import { spawn } from 'env-cmd/dist/spawn';
 
 @Injectable()
 export class KubernetesService implements OnModuleInit, IKubernetesService {
@@ -23,10 +24,10 @@ export class KubernetesService implements OnModuleInit, IKubernetesService {
   // Injecting required services in the constructor
   constructor(
       @Inject(forwardRef(() => InfluxdbService))
-      @Inject(forwardRef(() => GrafanaService))// Use forwardRef for circular dependencies
       private readonly influxdbService: InfluxdbService,
-      private readonly kubernetesClient: KubernetesClient,
+      @Inject(forwardRef(() => GrafanaService)) // Use forwardRef for circular dependencies
       private readonly grafanaService: GrafanaService,
+      private readonly kubernetesClient: KubernetesClient,
       private readonly jmeterService: JmeterService,
   ) {}
 
@@ -51,8 +52,10 @@ export class KubernetesService implements OnModuleInit, IKubernetesService {
     await this.influxdbService.deployInfluxdbIfNotExists();
 
     // Deploy JMeter (Master and Slaves)
-    await this.jmeterService.deployJmeterMasterIfNotExists();
-    await this.jmeterService.deployJmeterSlavesIfNotExists();
+    // await this.jmeterService.deployJmeterMasterIfNotExists();
+    // await this.jmeterService.deployJmeterSlavesIfNotExists();
+    await this.portForwardResource("influxdb", "8086", "monitoring" )
+    await this.portForwardResource("grafana", "3000", "monitoring" )
 
     this.logger.log("All deployments have been successfully initialized.");
   }
@@ -129,11 +132,6 @@ export class KubernetesService implements OnModuleInit, IKubernetesService {
       serviceType: "InfluxDB" | "Grafana" | "JMeterMaster" | "JMeterSlave",
   ): Promise<string> {
     try {
-      const service = await this.kubernetesClient.k8sCoreApi.readNamespacedService(
-          serviceName,
-          namespace,
-      );
-
       // Define port mapping for different services
       const servicePorts: { [key: string]: number } = {
         InfluxDB: 8086, // Default port for InfluxDB
@@ -175,6 +173,73 @@ export class KubernetesService implements OnModuleInit, IKubernetesService {
       throw new Error(`Deployment Error: ${errorMessage}`);
     }
   }
+
+  public async portForwardResource(
+    serviceName: string,
+    port: string,
+    namespace: string
+  ): Promise<void> {
+    const maxRetries = 10; // Maximum number of retries
+    const delay = 5000; // Delay between retries in ms (5 seconds)
+
+    let podReady = false;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      podReady = await this.checkPodReady(serviceName, namespace);
+      if (podReady) break;
+
+      this.logger.log(`Waiting for pod ${serviceName} to be ready... (Attempt ${attempt + 1})`);
+      await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
+    }
+
+    if (!podReady) {
+      throw new Error(`Pod ${serviceName} in namespace ${namespace} is not ready after ${maxRetries} attempts`);
+    }
+
+    try {
+      const portForwardProcess = spawn("kubectl", [
+        "port-forward",
+        `svc/${serviceName}`,
+        `${port}:${port}`,
+        `--namespace=${namespace}`
+      ]);
+
+      portForwardProcess.stdout.on("data", (data) => {
+        this.logger.log(`Port-forward output for ${serviceName}: ${data}`);
+      });
+
+      portForwardProcess.stderr.on("data", (data) => {
+        this.logger.error(`Port-forward error for ${serviceName}: ${data}`);
+      });
+
+      portForwardProcess.on("error", (error) => {
+        this.logger.error(`Failed to start port-forward for ${serviceName}: ${error.message}`);
+      });
+
+      portForwardProcess.on("close", (code) => {
+        if (code !== 0) {
+          this.logger.error(`Port-forward process for ${serviceName} exited with code ${code}`);
+        } else {
+          this.logger.log(`Port-forward process for ${serviceName} exited successfully.`);
+        }
+      });
+    } catch (error) {
+      const errorMessage = this.getErrorMessage(error);
+      this.logger.error(`Error starting port-forward for ${serviceName}: ${errorMessage}`);
+      throw new Error(`Port-forwarding Error: ${errorMessage}`);
+    }
+  }
+
+  private async checkPodReady(serviceName: string, namespace: string): Promise<boolean> {
+    try {
+      const { body } = await this.kubernetesClient.k8sCoreApi.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, `app=${serviceName}`);
+      const pod = body.items.find(pod => pod.status?.phase === "Running");
+      return !!pod;
+    } catch (error) {
+      this.logger.error(`Error checking pod status for ${serviceName}: ${this.getErrorMessage(error)}`);
+      return false;
+    }
+  }
+
 
   public async deploymentExists(deploymentName: string, namespace: string): Promise<boolean> {
     try {

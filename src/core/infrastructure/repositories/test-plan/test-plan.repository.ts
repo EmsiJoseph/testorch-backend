@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { GitHubService } from '../../services/github/github.services';
+import { GitHubService } from '../../services/github/github.service';
 import { TestPlan } from '../../../domain/models/test-plan.entity';
 
 

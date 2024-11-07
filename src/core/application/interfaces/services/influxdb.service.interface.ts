@@ -1,19 +1,18 @@
-import {CreateTeamDto} from "../../../presentation/dto/team.dto";
 
 export interface IInfluxdbService {
-    deployInfluxdbIfNotExists(): Promise<string>;
+  deployInfluxdbIfNotExists(): Promise<string>;
 
-    createInfluxdbOrg(
-        createTeamDto: CreateTeamDto,
-    ): Promise<any>;
+  createInfluxdbOrg(orgName: string): Promise<any>;
 
-    getInfluxdbUrl(): Promise<any>;
+  createInfluxdbBucket(projectName: string, orgId: string): Promise<any>;
 
-    getInfluxdbOrg(): Promise<any>;
+  getInfluxdbUrl(): Promise<any>;
 
-    deleteInfluxdbOrg(): Promise<any>;
+  getInfluxdbOrg(): Promise<any>;
 
-    listInfluxdbOrgs(): Promise<any>;
+  deleteInfluxdbOrg(): Promise<any>;
 
-    getInfluxdbToken(): Promise<any>;
+  listInfluxdbOrgs(): Promise<any>;
+
+  getInfluxdbToken(): Promise<any>;
 }

@@ -1,5 +1,15 @@
 export interface IKubernetesService {
   /**
+   * Port-forwards a Kubernetes service to a specified port in a given namespace.
+   * @param serviceName - The name of the Kubernetes service to port-forward.
+   * @param port - The port to forward.
+   * @param namespace - The Kubernetes namespace where the service is located.
+   * @returns A Promise that resolves with the stdout from the port-forward command.
+   * @throws An error if port-forwarding fails.
+   */
+  portForwardResource(serviceName: string, port: string, namespace: string): Promise<void>;
+
+  /**
    * Initialize the Kubernetes environment, ensuring namespaces and other resources exist.
    */
   onModuleInit(): Promise<void>;

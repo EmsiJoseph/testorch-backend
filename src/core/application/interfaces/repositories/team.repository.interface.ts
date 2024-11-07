@@ -1,14 +1,16 @@
-import {Team} from "../../../domain/models/team";
-import {CreateTeamDto} from "../../../presentation/dto/team.dto";
+import { TeamSelectType } from '../../../domain/models/team';
+import { CreateTeamDto } from '../../../presentation/dto/team.dto';
 
 export interface ITeamRepository {
-    createTeam(
-        createTeamDto: CreateTeamDto,
-    ): Promise<Team>;
+  createTeam(
+    createTeamDto: CreateTeamDto,
+    influxDbOrgId: string,
+    userId: string,
+  ): Promise<TeamSelectType>;
 
-    getTeam(teamName: string): Promise<void>;
+  deleteTeam(teamName: string): Promise<void>;
 
-    deleteTeam(teamName: string): Promise<void>;
+  getTeams(userId: string): Promise<void>;
 
-    getTeams(userId: string): Promise<void>;
+  getTeamByAuth0OrgId(auth0OrgId: string): Promise<TeamSelectType | null>;
 }

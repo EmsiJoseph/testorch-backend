@@ -1,34 +1,31 @@
-import {IInfluxdbService} from "../interfaces/services/influxdb.service.interface";
-import {ITeamRepository} from "../interfaces/repositories/team.repository.interface";
-import {CreateTeamDto} from "../../presentation/dto/team.dto";
-
-// TODO: Use drizzle type
-// interface IUser {
-//   id: string;
-//   roles: string[];
-// }
+import { TeamSelectType } from 'src/core/domain/models/team';
+import { CreateTeamDto } from '../../presentation/dto/team.dto';
+import { ITeamRepository } from '../interfaces/repositories/team.repository.interface';
+import { IUsersRepository } from '../interfaces/repositories/users.repository.interface';
+import { IInfluxdbService } from '../interfaces/services/influxdb.service.interface';
 
 /**
  * Function to create a team.
  * @param createTeamDto - The name of the team to be created.
  * @param teamRepo - The repository to handle team data.
  * @param influxdbService - The service to handle InfluxDB operations.
+ * @param userId
  * @returns The result of the team creation process.
  */
 export async function createTeamUseCase(
-    createTeamDto: CreateTeamDto,
-    teamRepo: ITeamRepository,
-    influxdbService: IInfluxdbService
-): Promise<{ message: string; teamName: string }> {
-    // Create the team in the team repository
-    const createdTeam = await teamRepo.createTeam(createTeamDto);
+  createTeamDto: CreateTeamDto,
+  teamRepo: ITeamRepository,
+  influxdbService: IInfluxdbService,
+  userRepo: IUsersRepository,
+): Promise<TeamSelectType> {
+  const user = await userRepo.getUserByEmail(createTeamDto.email);
+  if (!user) {
+    throw new Error('User not found');
+  }
 
-    // Create an InfluxDB organization for the team
-    await influxdbService.createInfluxdbOrg(createdTeam);
+  // Create an InfluxDB organization for the team
+  const { id } = await influxdbService.createInfluxdbOrg(createTeamDto.name);
 
-    // Return success message and team name
-    return {
-        message: "Team and corresponding InfluxDB organization created successfully",
-        teamName: createTeamDto.name,
-    };
+  // Create the team in the team repository
+  return await teamRepo.createTeam(createTeamDto, id, user.id);
 }

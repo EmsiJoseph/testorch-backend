@@ -1,28 +1,37 @@
-import { forwardRef, Module } from "@nestjs/common";
-import { HttpModule } from "@nestjs/axios"; // Import HttpModule
-import { EventEmitterModule } from "@nestjs/event-emitter";
-import { InfluxdbService } from "./services/influxdb/influxdb.service";
-import { GrafanaService } from "./services/grafana/grafana.service";
-import { JmeterService } from "./services/jmeter/jmeter.service";
-import { KubernetesService } from "./services/kubernetes/kubernetes.service";
-import { KubernetesClient } from "./client/kubernetes-client";
+import { HttpModule } from '@nestjs/axios'; // Import HttpModule
+import { forwardRef, Module } from '@nestjs/common';
+import { KubernetesClient } from './client/kubernetes-client';
+import { GrafanaService } from './services/grafana/grafana.service';
+import { InfluxdbService } from './services/influxdb/influxdb.service';
+import { JmeterService } from './services/jmeter/jmeter.service';
+import { KubernetesService } from './services/kubernetes/kubernetes.service';
 
-import { InfluxdbClient } from "./client/influxdb-client";
-import { TeamRepository } from "./repositories/team/team.repository";
-import { UsersRepository } from "./repositories/users/users.repository";
-import { USERS_REPOSITORY_TOKEN } from "../application/interfaces/repositories/users.repository.interface";
-import { DrizzleModule } from "./database/drizzle.module";
-import { AuthenticationService } from "./services/auth/authentication.service";
-import { TestPlanRepository } from "./repositories/test-plan/test-plan.repository"; // Import TestPlanRepository
-import { GitHubService } from "./services/github/github.services"; // Import GitHubService
-
+import { USERS_REPOSITORY_TOKEN } from '../application/interfaces/repositories/users.repository.interface';
+import { InfluxdbClient } from './client/influxdb-client';
+import { NestDrizzleModule } from './database/drizzle.module'; // Import GitHubService
+import * as schema from './database/schema';
+import { ProjectRepository } from './repositories/project/project.repository';
+import { TeamRepository } from './repositories/team/team.repository';
+import { TestPlanRepository } from './repositories/test-plan/test-plan.repository'; // Import TestPlanRepository
+import { TestPlanRepositoryV2 } from './repositories/test-plan/test-plan.repository-v2'; // Import TestPlanRepositoryV2
+import { UsersRepository } from './repositories/users/users.repository';
+import { Auth0Service } from './services/auth0/auth0.service';
+import { GitHubService } from './services/github/github.service';
 
 @Module({
   imports: [
-    EventEmitterModule.forRoot(),
-    forwardRef(() => InfrastructureModule),// Use forwardRef to resolve circular dependencies
-    DrizzleModule,
-    HttpModule
+    forwardRef(() => InfrastructureModule), // Use forwardRef to resolve circular dependencies
+    HttpModule,
+    NestDrizzleModule.forRootAsync({
+      useFactory: () => {
+        return {
+          driver: 'postgres-js',
+          url: process.env.DATABASE_URL,
+          options: { schema },
+          migrationOptions: { migrationsFolder: './migration' },
+        };
+      },
+    }),
   ],
   providers: [
     InfluxdbService,
@@ -32,26 +41,33 @@ import { GitHubService } from "./services/github/github.services"; // Import Git
     JmeterService,
     KubernetesClient,
     TeamRepository,
+    ProjectRepository,
     TestPlanRepository,
+    TestPlanRepositoryV2, // Register TestPlanRepositoryV2 as a provider
     GitHubService,
-    AuthenticationService,
     {
       provide: USERS_REPOSITORY_TOKEN,
-      useClass: UsersRepository
-    }
+      useClass: UsersRepository,
+    },
+    UsersRepository,
+    Auth0Service,
+    TestPlanRepositoryV2, // Register TestPlanService as a provider
   ],
   exports: [
     TeamRepository,
+    UsersRepository,
+    ProjectRepository,
     GrafanaService,
     JmeterService,
     InfluxdbService,
     KubernetesService,
     InfluxdbClient,
     TestPlanRepository,
-    AuthenticationService,
+    TestPlanRepositoryV2, // Export TestPlanRepositoryV2
     GitHubService,
-    USERS_REPOSITORY_TOKEN
-  ]
+    USERS_REPOSITORY_TOKEN,
+    Auth0Service,
+    TestPlanRepositoryV2,
+  ],
 })
-export class InfrastructureModule {
-}
+export class InfrastructureModule {}

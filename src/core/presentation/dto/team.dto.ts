@@ -5,6 +5,14 @@ export class CreateTeamDto {
   @IsString()
   @Length(3, 31)
   name: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  auth0_org_id: string;
+
+  email: string;
 }
 
 // Define the UpdateTeam DTO
