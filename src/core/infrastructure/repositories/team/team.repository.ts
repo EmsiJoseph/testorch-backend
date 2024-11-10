@@ -1,11 +1,12 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { CreateTeamDto } from 'src/core/presentation/dto/team.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { DRIZZLE_ORM } from '../../../../constants/db.constant';
 import { ITeamRepository } from '../../../application/interfaces/repositories/team.repository.interface';
 import { DatabaseOperationError } from '../../../domain/errors/common';
-import { TeamInsertType, TeamSelectType } from '../../../domain/models/team';
+import { TeamSelectType } from '../../../domain/models/team';
 import * as schema from '../../database/schema';
 import { teamMembers, teams } from '../../database/schema';
 
@@ -18,7 +19,7 @@ export class TeamRepository implements ITeamRepository {
   ) {}
 
   async createTeam(
-    createTeamDto: TeamInsertType,
+    createTeamDto: CreateTeamDto,
     influxDbOrgId: string,
     userId: string,
   ): Promise<TeamSelectType> {
@@ -30,6 +31,7 @@ export class TeamRepository implements ITeamRepository {
         .values({
           id: id,
           name: createTeamDto.name,
+          description: createTeamDto.description,
           influxDb_org_id: influxDbOrgId,
           auth0_org_id: createTeamDto.auth0_org_id,
         })
@@ -63,6 +65,7 @@ export class TeamRepository implements ITeamRepository {
       throw new DatabaseOperationError('Failed to create team', error);
     }
   }
+
 
   async getTeamByAuth0OrgId(
     auth0OrgId: string,

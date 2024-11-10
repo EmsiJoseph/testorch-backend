@@ -5,12 +5,14 @@ import {
 } from 'drizzle-orm/postgres-js';
 import { migrate as migratePgJs } from 'drizzle-orm/postgres-js/migrator';
 import * as postgres from 'postgres';
-import { NEST_DRIZZLE_OPTIONS } from '../../../constants/db.constant';
+import { DatabaseOperationError } from 'src/core/domain/errors/common';
+import {
+  NEST_DRIZZLE_OPTIONS
+} from '../../../constants/db.constant';
 import {
   IDrizzleService,
   NestDrizzleOptions,
 } from '../../application/interfaces/services/drizzle.interfaces';
-import { DatabaseOperationError } from 'src/core/domain/errors/common';
 
 @Injectable()
 export class DrizzleService implements IDrizzleService {
@@ -51,10 +53,14 @@ export class DrizzleService implements IDrizzleService {
 
   async migrate() {
     const client = postgres(this._NestDrizzleOptions.url, { max: 1 });
-    await migratePgJs(
-      drizzlePgJs(client),
-      this._NestDrizzleOptions.migrationOptions,
-    );
+    if (this._NestDrizzleOptions.migrationOptions) {
+      await migratePgJs(
+        drizzlePgJs(client),
+        this._NestDrizzleOptions.migrationOptions,
+      );
+    } else {
+      throw new Error('Migration options are not defined');
+    }
   }
 
   async getDrizzle() {

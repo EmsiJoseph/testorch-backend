@@ -2,7 +2,7 @@ import * as k8s from "@kubernetes/client-node";
 import { Injectable, Logger } from "@nestjs/common";
 import { IKubernetesClient } from "../../application/interfaces/client/kubernetes-client.interface";
 import { IncomingMessage } from "http";
-import {KubernetesHttpError} from "../../domain/errors/common"; // Import IncomingMessage for type checking
+import { KubernetesHttpError } from "../../domain/errors/common"; // Corrected import statement
 
 @Injectable()
 export class KubernetesClient implements IKubernetesClient {
@@ -43,7 +43,11 @@ export class KubernetesClient implements IKubernetesClient {
     async createSecret(namespace: string, secretManifest: k8s.V1Secret): Promise<void> {
         try {
             // Check if the secret already exists
-            const existingSecret = await this.getSecret(namespace, secretManifest.metadata?.name);
+            const secretName = secretManifest.metadata?.name;
+            if (!secretName) {
+                throw new Error("Secret name is undefined.");
+            }
+            const existingSecret = await this.getSecret(namespace, secretName);
             if (existingSecret) {
                 this.logger.log(
                     `Secret '${secretManifest.metadata?.name}' already exists in namespace '${namespace}'. Skipping creation.`,
@@ -67,11 +71,12 @@ export class KubernetesClient implements IKubernetesClient {
         }
     }
 
-    async getSecret(namespace: string, secretName: string): Promise<k8s.V1Secret> {
+    async getSecret(namespace: string, secretName: string): Promise<k8s.V1Secret | undefined> {
         try {
             return (await this.k8sCoreApi.readNamespacedSecret(secretName, namespace)).body;
         } catch (error) {
             this.handleKubernetesError(error, `Failed to get secret '${secretName}' in namespace '${namespace}'`);
+            return undefined;
         }
     }
 
@@ -102,6 +107,7 @@ export class KubernetesClient implements IKubernetesClient {
                 return false;
             }
             this.handleKubernetesError(error, `Error checking namespace existence '${namespace}'`);
+            return false
         }
     }
 
@@ -114,6 +120,7 @@ export class KubernetesClient implements IKubernetesClient {
                 return false;
             }
             this.handleKubernetesError(error, `Error checking deployment existence '${deploymentName}' in namespace '${namespace}'`);
+            return false; // Ensure a boolean is always returned
         }
     }
 

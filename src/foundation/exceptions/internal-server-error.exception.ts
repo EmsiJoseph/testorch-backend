@@ -57,9 +57,9 @@ export class InternalServerErrorException extends HttpException {
       description: exception.description,
     });
     this.message = exception.message;
-    this.cause = exception.cause;
-    this.description = exception.description;
-    this.code = exception.code;
+    this.cause = exception.cause ?? new Error('No cause provided');
+    this.description = exception.description || 'No description provided';
+    this.code = exception.code ?? -1;
     this.timestamp = new Date().toISOString();
   }
 

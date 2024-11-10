@@ -1,8 +1,10 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { getProjectsUseCase } from 'src/core/application/use-cases/get-projects.use-case';
 import { TeamRepository } from 'src/core/infrastructure/repositories/team/team.repository';
 import { TestPlanRepositoryV2 } from 'src/core/infrastructure/repositories/test-plan/test-plan.repository-v2';
 import { UsersRepository } from 'src/core/infrastructure/repositories/users/users.repository';
+import { SetupService } from 'src/core/infrastructure/services/setup.service';
 import { AuthorizationGuard } from '../../../foundation/guards/authorization.guard';
 import { createProjectUseCase } from '../../application/use-cases/create-project.use-case';
 import { ProjectRepository } from '../../infrastructure/repositories/project/project.repository';
@@ -17,6 +19,8 @@ export class ProjectController {
     private readonly teamRepo: TeamRepository,
     private readonly userRepo: UsersRepository,
     private readonly testPlanRepo: TestPlanRepositoryV2,
+    private readonly setupService: SetupService,
+    private readonly configService: ConfigService,
   ) {}
 
   @UseGuards(AuthorizationGuard)
@@ -28,6 +32,8 @@ export class ProjectController {
       this.influxdbService,
       this.teamRepo,
       this.userRepo,
+      this.setupService,
+      this.configService,
     );
     return { message: 'Project created successfully', data: result };
   }

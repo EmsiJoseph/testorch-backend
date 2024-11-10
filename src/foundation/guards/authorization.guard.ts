@@ -10,8 +10,8 @@ export class AuthorizationGuard implements CanActivate {
   private AUTH0_DOMAIN: string;
 
   constructor(private configService: ConfigService) {
-    this.AUTH0_DOMAIN = this.configService.get('AUTH0_DOMAIN');
-    this.AUTH0_AUDIENCE = this.configService.get('AUTH0_AUDIENCE');
+    this.AUTH0_DOMAIN = this.configService.get<string>('AUTH0_DOMAIN') || '';
+    this.AUTH0_AUDIENCE = this.configService.get<string>('AUTH0_AUDIENCE') || '';
   }
 
   async canActivate(

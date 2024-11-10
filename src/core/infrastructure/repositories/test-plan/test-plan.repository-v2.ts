@@ -1,17 +1,17 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { DRIZZLE_ORM } from 'src/constants/db.constant';
+import { ITestPlanRepository } from 'src/core/application/interfaces/repositories/test-plan.repository.interface.ts';
 import { DatabaseOperationError } from 'src/core/domain/errors/common';
 import { TestPlanSelectType } from 'src/core/domain/models/test-plan';
-import { UploadPlanDto } from 'src/core/presentation/dto/test-plan.dto';
+import { AddTestPlanDto } from 'src/core/presentation/dto/test-plan.dto';
 import * as xml2js from 'xml2js';
 import { DrizzleService } from '../../database/drizzle.service';
 import * as schema from '../../database/schema';
 import { testPlans } from '../../database/schema';
-import { ITestPlanRepository } from 'src/core/application/interfaces/repositories/test-plan.repository.interface.ts';
 
 @Injectable()
 export class TestPlanRepositoryV2 implements ITestPlanRepository {
@@ -22,12 +22,38 @@ export class TestPlanRepositoryV2 implements ITestPlanRepository {
     private readonly drizzleService: DrizzleService,
   ) {}
 
+  async getDownloadUrl(
+    testPlanName: string,
+    projectName: string,
+  ): Promise<string> {
+    try {
+      const query = this.conn.query.testPlans.findFirst({
+        where: and(
+          eq(testPlans.name, testPlanName),
+          eq(testPlans.project_name, projectName),
+        ),
+      });
+      const testPlan = await query.execute();
+      if (testPlan) {
+        return testPlan.location;
+      } else {
+        throw new DatabaseOperationError('Cannot find Test Plan.');
+      }
+    } catch (error) {
+      this.drizzleService.handlePostgresError(error, 'Test');
+    }
+  }
+
   async getTestPlanByName(
     name: string,
+    projectName: string,
   ): Promise<TestPlanSelectType | undefined> {
     try {
       const query = this.conn.query.testPlans.findFirst({
-        where: eq(testPlans.name, name),
+        where: and(
+          eq(testPlans.name, name),
+          eq(testPlans.project_name, projectName),
+        ),
       });
       return await query.execute();
     } catch (error) {
@@ -37,41 +63,45 @@ export class TestPlanRepositoryV2 implements ITestPlanRepository {
 
   async addTestPlan(
     testPlanName: string,
+    description: string,
     location: string,
     createdBy: string,
-    projectId: string,
+    projectName: string,
+    type: string,
   ): Promise<TestPlanSelectType> {
     try {
       const query = this.conn
         .insert(testPlans)
         .values({
           name: testPlanName,
+          description: description,
           location: location,
           created_by: createdBy,
-          project_id: projectId,
+          project_name: projectName,
+          type: type,
         })
         .returning();
 
       const [created] = await query.execute();
 
       if (created) {
-        this.logger.log(`User created: ${created.id}`);
+        this.logger.log(`Test created: ${created.id}`);
         return created;
       } else {
-        throw new DatabaseOperationError('Cannot create user.');
+        throw new DatabaseOperationError('Cannot create Test.');
       }
     } catch (error) {
-      this.drizzleService.handlePostgresError(error, 'User');
+      this.drizzleService.handlePostgresError(error, 'Test');
     }
   }
 
   async getRecentTestPlans(
-    projectId: string,
+    projectName: string,
     limit: number,
   ): Promise<TestPlanSelectType[]> {
     try {
       const query = this.conn.query.testPlans.findMany({
-        where: eq(testPlans.project_id, projectId),
+        where: eq(testPlans.project_name, projectName),
         orderBy: desc(testPlans.created_at),
         limit: limit,
       });
@@ -82,13 +112,19 @@ export class TestPlanRepositoryV2 implements ITestPlanRepository {
   }
 
   async getTestPlans(
-    projectId: string,
+    projectName: string,
+    createdBy: string,
   ): Promise<TestPlanSelectType[] | undefined> {
     try {
       const query = this.conn
         .select()
         .from(testPlans)
-        .where(eq(testPlans.project_id, projectId));
+        .where(
+          and(
+            eq(testPlans.project_name, projectName),
+            eq(testPlans.created_by, createdBy),
+          ),
+        );
 
       const projectList = await query.execute();
 
@@ -108,17 +144,20 @@ export class TestPlanRepositoryV2 implements ITestPlanRepository {
     }
   }
 
-  async processBase64File(uploadFileDto: UploadPlanDto): Promise<any> {
+  public processBase64File(uploadFileDto: AddTestPlanDto): string {
     const { file, fileName } = uploadFileDto;
     try {
       const buffer = this.decodeBase64(file);
       const filePath = this.getFilePath(fileName);
       fs.writeFileSync(filePath, buffer);
-      const fileContent = buffer.toString('utf-8');
-      return await this.extractTestData(fileContent);
+
+      return filePath;
+      // const fileContent = buffer.toString('utf-8');
+      // return await this.extractTestData(fileContent);
     } catch (error) {
       this.handleError(error);
     }
+    return '';
   }
 
   public getFilePath(fileName: string): string {

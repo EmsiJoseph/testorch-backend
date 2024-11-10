@@ -3,10 +3,11 @@ import { IsString, Length, IsOptional } from 'class-validator';
 // Define the CreateTeam DTO
 export class CreateTeamDto {
   @IsString()
-  @Length(3, 31)
+  @Length(3, 50)
   name: string;
 
   @IsString()
+  @Length(3, 100)
   @IsOptional()
   description?: string;
 

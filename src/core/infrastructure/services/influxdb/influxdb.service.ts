@@ -13,6 +13,8 @@ import {
 } from '../../../shared/utils/utils';
 import { InfluxdbClient } from '../../client/influxdb-client';
 import { KubernetesService } from '../kubernetes/kubernetes.service';
+import { SetupService } from '../setup.service';
+import { InfluxdbCredentials } from 'src/core/domain/models/credentials-for-clients';
 
 @Injectable()
 export class InfluxdbService implements IInfluxdbService, OnModuleInit {
@@ -28,6 +30,7 @@ export class InfluxdbService implements IInfluxdbService, OnModuleInit {
     @Inject(forwardRef(() => KubernetesService))
     private readonly kubernetesService: KubernetesService,
     private readonly influxdbClient: InfluxdbClient,
+    private readonly setupService: SetupService,
   ) {}
 
   /**
@@ -104,6 +107,13 @@ export class InfluxdbService implements IInfluxdbService, OnModuleInit {
       this.namespace,
     );
 
+    // Store the credentials in the database
+    await this.setupService.storeInfluxDbCredentials(
+      'admin',
+      this.influxdbPassword,
+      token,
+    );
+
     // Update the deployment state
     this.isFirstDeployment = true;
     this.influxdbUrl = await this.getInfluxdbUrl();
@@ -133,12 +143,8 @@ export class InfluxdbService implements IInfluxdbService, OnModuleInit {
    * Create a new InfluxDB organization if it doesn't exist.
    * @param event
    */
-  async createInfluxdbOrg(orgName: string) {
-    this.influxdbClient.setConfig(
-      'http://localhost:8086',
-      'e2fe2734f793c51f05274217066ca3ea',
-    );
-
+  async createInfluxdbOrg(orgName: string, credentials: InfluxdbCredentials) {
+    this.influxdbClient.setConfig(credentials.url, credentials.token);
     const orgExists = await this.influxdbClient.orgExists(orgName);
     if (orgExists) {
       throw new Error(`Team '${orgName}' already exists.`);
@@ -151,11 +157,15 @@ export class InfluxdbService implements IInfluxdbService, OnModuleInit {
    * Create a new InfluxDB bucket for a project.
    * @param projectName
    */
-  async createInfluxdbBucket(projectName: string, orgId: string) {
-    this.influxdbClient.setConfig(
-      'http://localhost:8086',
-      'e2fe2734f793c51f05274217066ca3ea',
-    );
+  async createInfluxdbBucket(
+    projectName: string,
+    orgId: string,
+    credentials: InfluxdbCredentials,
+  ) {
+    this.influxdbClient.setConfig(credentials.url, credentials.token);
+
+    console.log('Creating bucket for project:', projectName);
+    console.log('Org ID:', orgId);
 
     return await this.influxdbClient.createBucket(projectName, orgId);
   }

@@ -18,11 +18,11 @@ export class InfluxdbClient {
 
     // Reconfigure the Axios instance with the provided URL and token
     this.influxdbApi = axios.create({
-      baseURL: `${this.influxdbUrl}/api/v2/`,
+      baseURL: `${this.influxdbUrl}/api/v2`,
       headers: { Authorization: `Token ${this.influxdbToken}` },
     });
     this.logger.log(
-      `InfluxDBClient configured with base URL: ${this.influxdbUrl}`,
+      `InfluxDBClient configured with base URL: ${this.influxdbUrl} and token: ${this.influxdbToken}`,
     );
   }
 
@@ -105,6 +105,7 @@ export class InfluxdbClient {
       );
       return response.data;
     } catch (error) {
+      console.log(error)
       this.handleAxiosError('Error creating bucket', error);
     }
   }

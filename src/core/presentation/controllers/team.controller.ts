@@ -1,5 +1,7 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { UsersRepository } from 'src/core/infrastructure/repositories/users/users.repository';
+import { SetupService } from 'src/core/infrastructure/services/setup.service';
 import { AuthorizationGuard } from '../../../foundation/guards/authorization.guard';
 import { createTeamUseCase } from '../../application/use-cases/create-team.use-case';
 import { TeamRepository } from '../../infrastructure/repositories/team/team.repository';
@@ -12,6 +14,8 @@ export class TeamController {
     private readonly teamRepo: TeamRepository,
     private readonly influxdbService: InfluxdbService,
     private readonly userRepo: UsersRepository,
+    private readonly setupService: SetupService,
+    private readonly configService: ConfigService
   ) {}
 
   @UseGuards(AuthorizationGuard)
@@ -22,6 +26,8 @@ export class TeamController {
       this.teamRepo,
       this.influxdbService,
       this.userRepo,
+      this.setupService,
+      this.configService,
     );
     return { message: 'Team created successfully', data: result };
   }

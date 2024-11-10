@@ -4,7 +4,6 @@ import * as k8s from "@kubernetes/client-node";
 export interface IKubernetesClient {
   createNamespace(namespace: string): Promise<void>;
   createSecret(namespace: string, secretManifest: k8s.V1Secret): Promise<void>;
-  getSecret(namespace: string, secretName: string): Promise<k8s.V1Secret>;
   createRole(namespace: string, roleManifest: k8s.V1Role): Promise<void>;
   createRoleBinding(
     namespace: string,
@@ -17,4 +16,5 @@ export interface IKubernetesClient {
     namespace: string,
     serviceType: "InfluxDB" | "Grafana" | "JMeterMaster" | "JMeterSlave",
   ): Promise<string>;
+  getSecret(namespace: string, secretName: string): Promise<k8s.V1Secret | undefined>;
 }

@@ -20,15 +20,15 @@ export async function getProjectsUseCase(
     projects.map(async (project) => {
       const user = await userRepo.getUser(project.created_by);
       const recentTestplan = await testPlanRepo.getRecentTestPlans(
-        project.id as string,
+        project.name as string,
         1,
       );
 
       return {
         ...project,
-        createdByName: user.first_name
+        createdByName: user && user.first_name
           ? `${user.first_name} ${user.last_name}`
-          : user.email,
+          : user ? user.email : 'Unknown',
         recentTestPlan: recentTestplan || null,
       };
     }),

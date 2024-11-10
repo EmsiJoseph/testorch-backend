@@ -15,7 +15,7 @@ import {
   ValidationExceptionFilter,
 } from './foundation/filters';
 import { ValidationError } from 'class-validator';
-
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -23,6 +23,7 @@ import { ValidationError } from 'class-validator';
     ConfigModule.forRoot({ isGlobal: true }),
     InfrastructureModule,
     PresentationModule,
+    HttpModule,
   ],
   providers: [AuthorizationGuard, RolesGuard, { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_FILTER, useClass: ValidationExceptionFilter },

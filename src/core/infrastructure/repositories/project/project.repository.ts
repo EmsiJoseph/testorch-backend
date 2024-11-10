@@ -1,15 +1,14 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { and, eq } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { IProjectRepository } from 'src/core/application/interfaces/repositories/project.repository.interface';
-import {
-    ProjectInsertType,
-    ProjectSelectType,
-} from 'src/core/domain/models/project';
+import { ProjectSelectType } from 'src/core/domain/models/project';
+import { CreateProjectDto } from 'src/core/presentation/dto/project.dto';
 import { DRIZZLE_ORM } from '../../../../constants/db.constant';
 import { DatabaseOperationError } from '../../../domain/errors/common';
 import * as schema from '../../database/schema';
 import { projects } from '../../database/schema';
-import { eq } from 'drizzle-orm';
+import { DrizzleService } from '../../database/drizzle.service';
 
 @Injectable()
 export class ProjectRepository implements IProjectRepository {
@@ -17,10 +16,11 @@ export class ProjectRepository implements IProjectRepository {
 
   constructor(
     @Inject(DRIZZLE_ORM) private conn: PostgresJsDatabase<typeof schema>,
+    private readonly drizzleService: DrizzleService
   ) {}
 
   async createProject(
-    createProjectDto: ProjectInsertType,
+    createProjectDto: CreateProjectDto,
     teamId: string,
     createdBy: string, // Add createdBy parameter
     influxDbBucketId: string,
@@ -31,6 +31,7 @@ export class ProjectRepository implements IProjectRepository {
         .values({
           name: createProjectDto.name,
           influxDb_bucket_id: influxDbBucketId,
+          description: createProjectDto.description,
           team_id: teamId,
           created_by: createdBy, // Include created_by
         })
@@ -50,8 +51,21 @@ export class ProjectRepository implements IProjectRepository {
   }
 
   // Placeholder methods for other CRUD operations
-  async getProject(projectName: string): Promise<void> {
-    console.log(`Getting project ${projectName}`);
+  async getProject(
+    projectName: string,
+    teamId: string,
+  ): Promise<ProjectSelectType | undefined> {
+    try {
+      const query = this.conn.query.projects.findFirst({
+        where: and(
+          eq(projects.name, projectName),
+          eq(projects.team_id, teamId),
+        ),
+      });
+      return await query.execute();
+    } catch (error) {
+      this.drizzleService.handlePostgresError(error, 'Test');
+    }
   }
 
   async deleteProject(projectName: string): Promise<void> {

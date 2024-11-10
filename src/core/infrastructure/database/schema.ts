@@ -49,10 +49,8 @@ export const teams = pgTable('team', {
 
 // Many-to-many relationship between users and teams, with the team role
 export const teamMembers = pgTable('team_members', {
-  user_id: text('user_id')
-    .notNull(),
-  team_id: uuid('team_id')
-    .notNull(),
+  user_id: text('user_id').notNull(),
+  team_id: uuid('team_id').notNull(),
   role: teamRoleEnum('role').notNull(), // Role of the user in the team
   created_at: timestamp('created_at').defaultNow(),
   update_at: timestamp('updated_at')
@@ -78,10 +76,33 @@ export const testPlans = pgTable('test_plan', {
   name: varchar('name').notNull(), // Name of the test plan
   description: varchar('description'), // Optional description of the test plan
   location: varchar('location').notNull(), // Git link for the test plan content
-  project_id: uuid('project_id').notNull(), // Test plan belongs to a project
+  type: varchar('type').notNull(), // Type of the test plan
+  project_name: varchar('project_name').notNull(), // Test plan belongs to a project
   created_by: text('created_by').notNull(), // User who created the test plan
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at')
     .defaultNow()
     .$onUpdateFn(() => new Date()),
 });
+
+export const grafanaCredentials = pgTable('grafana_credentials', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  username: varchar('username').notNull(),
+  password: varchar('password').notNull(),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at')
+    .defaultNow()
+    .$onUpdateFn(() => new Date()),
+});
+
+export const influxdbCredentials = pgTable('influxdb_credentials', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  username: varchar('username').notNull(),
+  password: varchar('password').notNull(),
+  token: text('token').notNull(),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at')
+    .defaultNow()
+    .$onUpdateFn(() => new Date()),
+});
+

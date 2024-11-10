@@ -13,21 +13,16 @@ async function bootstrap() {
   // Enable security headers
   app.use(helmet.default());
 
+  // Enable CORS for HTTP requests
+  app.enableCors({
+    origin: 'https://testorch.com:8443', // Replace with your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+    credentials: true, // Include credentials if needed
+  });
+
   // Enable WebSockets with Socket.IO adapter
   app.useWebSocketAdapter(new IoAdapter(app));
-
-  // Enable CORS if needed, you can configure it according to your use case
-  app.enableCors();
-
-  app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://testorch.com:8443');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Authorization, Content-Type',
-    );
-    next();
-  });
 
   // Set global prefix for the API
   const globalPrefix = 'api';
@@ -37,6 +32,13 @@ async function bootstrap() {
   const port = process.env.PORT || 5000;
 
   const server = await app.listen(port);
+
+  Logger.log(
+    `🚀 Testorch-Backend is running on: http://localhost:${port}/${globalPrefix}`,
+  );
+  Logger.log(
+    `🚀 WebSocket server is running on: ws://localhost:${port}`,
+  );
 
   const gracefulShutdown = () => {
     console.log('Shutting down gracefully...');
@@ -81,10 +83,6 @@ async function bootstrap() {
     module.hot.accept();
     module.hot.dispose(() => app.close());
   }
-
-  Logger.log(
-    `🚀 Testorch-Backend is running on: http://localhost:${port}/${globalPrefix}`,
-  );
 }
 
 bootstrap();

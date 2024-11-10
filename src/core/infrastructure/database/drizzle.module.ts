@@ -52,10 +52,12 @@ export class NestDrizzleModule {
 
     return [
       this.createOptionsProvider(options),
-      {
-        provide: options.useClass,
-        useClass: options.useClass,
-      },
+      ...(options.useClass
+        ? [{
+            provide: options.useClass,
+            useClass: options.useClass,
+          }]
+        : []),
     ];
   }
 
@@ -74,7 +76,7 @@ export class NestDrizzleModule {
       provide: NEST_DRIZZLE_OPTIONS,
       useFactory: async (optionsFactory: NestDrizzleOptionsFactory) =>
         await optionsFactory.createNestDrizzleOptions(),
-      inject: [options.useExisting || options.useClass],
+      inject: options.useExisting ? [options.useExisting] : options.useClass ? [options.useClass] : [],
     };
   }
 }

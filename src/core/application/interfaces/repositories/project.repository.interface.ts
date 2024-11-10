@@ -1,5 +1,5 @@
 import { ProjectSelectType } from 'src/core/domain/models/project';
-import { CreateProjectDto } from '../../../presentation/dto/project.dto';
+import { CreateProjectDto } from 'src/core/presentation/dto/project.dto';
 
 export interface IProjectRepository {
   createProject(
@@ -9,7 +9,10 @@ export interface IProjectRepository {
     influxDbBucketId: string,
   ): Promise<ProjectSelectType>;
 
-  getProject(projectName: string): Promise<void>;
+  getProject(
+    projectName: string,
+    teamId: string,
+  ): Promise<ProjectSelectType | undefined>;
 
   deleteProject(projectName: string): Promise<void>;
 

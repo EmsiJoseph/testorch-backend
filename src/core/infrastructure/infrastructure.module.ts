@@ -12,11 +12,12 @@ import { NestDrizzleModule } from './database/drizzle.module'; // Import GitHubS
 import * as schema from './database/schema';
 import { ProjectRepository } from './repositories/project/project.repository';
 import { TeamRepository } from './repositories/team/team.repository';
-import { TestPlanRepository } from './repositories/test-plan/test-plan.repository'; // Import TestPlanRepository
 import { TestPlanRepositoryV2 } from './repositories/test-plan/test-plan.repository-v2'; // Import TestPlanRepositoryV2
 import { UsersRepository } from './repositories/users/users.repository';
 import { Auth0Service } from './services/auth0/auth0.service';
 import { GitHubService } from './services/github/github.service';
+import { JmeterGateway } from './services/jmeter/jmeter.gateway';
+import { SetupService } from './services/setup.service';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { GitHubService } from './services/github/github.service';
       useFactory: () => {
         return {
           driver: 'postgres-js',
-          url: process.env.DATABASE_URL,
+          url: process.env.DATABASE_URL || 'default_database_url',
           options: { schema },
           migrationOptions: { migrationsFolder: './migration' },
         };
@@ -42,7 +43,6 @@ import { GitHubService } from './services/github/github.service';
     KubernetesClient,
     TeamRepository,
     ProjectRepository,
-    TestPlanRepository,
     TestPlanRepositoryV2, // Register TestPlanRepositoryV2 as a provider
     GitHubService,
     {
@@ -52,6 +52,8 @@ import { GitHubService } from './services/github/github.service';
     UsersRepository,
     Auth0Service,
     TestPlanRepositoryV2, // Register TestPlanService as a provider
+    JmeterGateway,
+    SetupService,
   ],
   exports: [
     TeamRepository,
@@ -62,12 +64,13 @@ import { GitHubService } from './services/github/github.service';
     InfluxdbService,
     KubernetesService,
     InfluxdbClient,
-    TestPlanRepository,
     TestPlanRepositoryV2, // Export TestPlanRepositoryV2
     GitHubService,
     USERS_REPOSITORY_TOKEN,
     Auth0Service,
     TestPlanRepositoryV2,
+    JmeterGateway,
+    SetupService
   ],
 })
 export class InfrastructureModule {}
