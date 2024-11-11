@@ -106,3 +106,13 @@ export const influxdbCredentials = pgTable('influxdb_credentials', {
     .$onUpdateFn(() => new Date()),
 });
 
+export const recentActivities = pgTable('recent_activities', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  email: varchar('email').notNull(),           
+  activity_name: varchar('activity_name').notNull(),
+  timestamp: timestamp('timestamp').defaultNow(),
+  team_name: varchar('team_name').notNull(),
+  auth0_org_id: varchar('auth0_org_id').notNull(),
+  project_name: varchar('project_name').notNull(),
+  activity_type: varchar('activity_type').notNull(), 
+});

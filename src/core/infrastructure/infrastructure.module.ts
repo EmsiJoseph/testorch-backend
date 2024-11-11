@@ -14,9 +14,10 @@ import { ProjectRepository } from './repositories/project/project.repository';
 import { TeamRepository } from './repositories/team/team.repository';
 import { TestPlanRepositoryV2 } from './repositories/test-plan/test-plan.repository-v2'; // Import TestPlanRepositoryV2
 import { UsersRepository } from './repositories/users/users.repository';
+import { RecentActivitiesRepository } from './repositories/activities/RecentActivitiesRepository';
+
 import { Auth0Service } from './services/auth0/auth0.service';
 import { GitHubService } from './services/github/github.service';
-import { JmeterGateway } from './services/jmeter/jmeter.gateway';
 import { SetupService } from './services/setup.service';
 
 @Module({
@@ -44,6 +45,7 @@ import { SetupService } from './services/setup.service';
     TeamRepository,
     ProjectRepository,
     TestPlanRepositoryV2, // Register TestPlanRepositoryV2 as a provider
+    RecentActivitiesRepository,
     GitHubService,
     {
       provide: USERS_REPOSITORY_TOKEN,
@@ -52,7 +54,6 @@ import { SetupService } from './services/setup.service';
     UsersRepository,
     Auth0Service,
     TestPlanRepositoryV2, // Register TestPlanService as a provider
-    JmeterGateway,
     SetupService,
   ],
   exports: [
@@ -66,10 +67,10 @@ import { SetupService } from './services/setup.service';
     InfluxdbClient,
     TestPlanRepositoryV2, // Export TestPlanRepositoryV2
     GitHubService,
+    RecentActivitiesRepository,
     USERS_REPOSITORY_TOKEN,
     Auth0Service,
     TestPlanRepositoryV2,
-    JmeterGateway,
     SetupService
   ],
 })

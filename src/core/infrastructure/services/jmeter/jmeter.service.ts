@@ -4,7 +4,6 @@ import { promises as fsPromises } from 'fs'; // Import fs.promises correctly
 import * as path from 'path';
 import { IJmeterService } from '../../../application/interfaces/services/jmeter.service.interface';
 import { KubernetesService } from '../kubernetes/kubernetes.service';
-import { JmeterGateway } from './jmeter.gateway';
 
 @Injectable()
 export class JmeterService implements IJmeterService {
@@ -14,7 +13,6 @@ export class JmeterService implements IJmeterService {
     @Inject(forwardRef(() => KubernetesService))
     private readonly kubernetesService: KubernetesService,
     private readonly configService: ConfigService,
-    private readonly jmeterGateway: JmeterGateway,
   ) {}
   /**
    * Deploy JMeter Master using the YAML file if not already deployed.
@@ -97,7 +95,6 @@ export class JmeterService implements IJmeterService {
         filePath,
         configMapName,
       );
-      this.jmeterGateway.sendProgressUpdate('Preparing test ');
     } catch (error) {
       this.logger.error(`Failed to create ConfigMap: ${error.message}`);
       throw new Error(`Failed to create ConfigMap: ${error.message}`);
@@ -116,13 +113,7 @@ export class JmeterService implements IJmeterService {
       filePath,
       '/uploads',
     );
-    this.jmeterGateway.sendPodStatusUpdate({
-      id: null,
-      type: 'controller',
-      status: this.mapPodStatusToStep('Pending'),
-    });
     await this.deployJmeterMasterIfNotExists();
-    this.jmeterGateway.sendProgressUpdate('Controller deployed');
 
     // Edit and Deploy JMeter Slaves
     const jmeterSlaveYaml = path.join(
@@ -138,13 +129,7 @@ export class JmeterService implements IJmeterService {
       '/uploads',
     );
     for (let i = 0; i < workerNodes; i++) {
-      this.jmeterGateway.sendPodStatusUpdate({
-        id: null,
-        type: `worker ${i + 1}`,
-        status: this.mapPodStatusToStep('Pending'),
-      });
       await this.deployJmeterSlavesIfNotExists();
-      this.jmeterGateway.sendProgressUpdate(`Worker ${i + 1} deployed`);
     }
 
     // Wait for JMeter Master and Slaves to be ready
@@ -168,11 +153,6 @@ export class JmeterService implements IJmeterService {
       masterPodName,
       this.namespace,
     );
-    this.jmeterGateway.sendPodStatusUpdate({
-      id: masterPodName,
-      type: 'controller',
-      status: this.mapPodStatusToStep(masterPodStatus),
-    });
 
     const slavePods = await this.kubernetesService.getPodsByLabel(
       'app=jmeter-slave',
@@ -183,11 +163,6 @@ export class JmeterService implements IJmeterService {
         pod.metadata.name,
         this.namespace,
       );
-      this.jmeterGateway.sendPodStatusUpdate({
-        id: pod.metadata.name,
-        type: 'worker',
-        status: this.mapPodStatusToStep(podStatus),
-      });
     }
 
     // Check if JMeter Master is in CrashLoopBackOff state and redeploy if necessary
@@ -204,14 +179,7 @@ export class JmeterService implements IJmeterService {
 
     // Start the test using the JMX file
     // Implement logic to start the test using the JMX file
-    this.jmeterGateway.sendProgressUpdate('Test started');
-
     const status = await this.kubernetesService.checkJmeterStatus();
-    this.jmeterGateway.sendPodStatusUpdate({
-      id: masterPodName,
-      type: 'controller',
-      status: status.master ? 'Master running' : 'Master not running',
-    });
     console.log(status);
 
     // Fetch logs and results after the test
@@ -219,12 +187,10 @@ export class JmeterService implements IJmeterService {
       masterPodName,
       this.namespace,
     );
-    this.jmeterGateway.sendProgressUpdate('Master Pod Logs:\n' + masterPodLogs);
 
     console.log(masterPodLogs);
 
     const results = await this.checkTestResults();
-    this.jmeterGateway.sendProgressUpdate('Test Results:\n' + results);
 
     return { filePath, workerNodes, results };
   }
@@ -334,7 +300,6 @@ export class JmeterService implements IJmeterService {
     jmxUrl: string,
     workerNodes: number,
   ): Promise<void> {
-    this.jmeterGateway.sendProgressUpdate(`Preparing your test`);
     const jmeterMasterYamlTemplate = path.join(
       process.cwd(),
       'src',
@@ -365,7 +330,6 @@ export class JmeterService implements IJmeterService {
       `jmeter-slave-deployment-${Date.now()}.yaml`,
     );
 
-    this.jmeterGateway.sendProgressUpdate(`Creating deployment YAML files`);
 
     await this.createDeploymentYaml(
       jmeterMasterYamlTemplate,
@@ -380,8 +344,6 @@ export class JmeterService implements IJmeterService {
       jmxUrl,
     );
 
-    this.jmeterGateway.sendProgressUpdate(`Launching Controller`);
-
     await this.kubernetesService.deployResourceFromYaml(
       jmeterMasterYaml,
       this.namespace,
@@ -393,10 +355,8 @@ export class JmeterService implements IJmeterService {
       this.namespace,
     );
 
-    this.jmeterGateway.sendProgressUpdate(`Controller is running`);
 
     for (let i = 0; i < workerNodes; i++) {
-      this.jmeterGateway.sendProgressUpdate(`Launching Worker ${i + 1}`);
       await this.kubernetesService.deployResourceFromYaml(
         jmeterSlaveYaml,
         this.namespace,
@@ -412,11 +372,6 @@ export class JmeterService implements IJmeterService {
       masterPodName,
       this.namespace,
     );
-    this.jmeterGateway.sendPodStatusUpdate({
-      id: masterPodName,
-      type: 'controller',
-      status: this.mapPodStatusToStep(masterPodStatus),
-    });
 
     const slavePods = await this.kubernetesService.getPodsByLabel(
       'app=jmeter-slave',
@@ -427,13 +382,7 @@ export class JmeterService implements IJmeterService {
         pod.metadata.name,
         this.namespace,
       );
-      this.jmeterGateway.sendPodStatusUpdate({
-        id: pod.metadata.name,
-        type: 'worker',
-        status: this.mapPodStatusToStep(podStatus),
-      });
     }
-    this.jmeterGateway.sendProgressUpdate(`All pods launched`);
 
     // Delete the temporary YAML files
     await fsPromises.unlink(jmeterMasterYaml);
