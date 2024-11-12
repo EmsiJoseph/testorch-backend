@@ -9,10 +9,6 @@ export interface IKubernetesService {
    */
   portForwardResource(serviceName: string, port: string, namespace: string): Promise<void>;
 
-  /**
-   * Initialize the Kubernetes environment, ensuring namespaces and other resources exist.
-   */
-  onModuleInit(): Promise<void>;
 
   /**
    * Create a Kubernetes Secret and configure Role and RoleBinding to manage access to it.

@@ -6,7 +6,6 @@ export interface IProjectRepository {
     createProjectDto: CreateProjectDto,
     teamId: string,
     createdBy: string,
-    influxDbBucketId: string,
   ): Promise<ProjectSelectType>;
 
   getProject(

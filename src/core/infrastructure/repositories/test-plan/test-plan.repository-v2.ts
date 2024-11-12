@@ -22,10 +22,10 @@ export class TestPlanRepositoryV2 implements ITestPlanRepository {
     private readonly drizzleService: DrizzleService,
   ) {}
 
-  async getDownloadUrl(
+  async getTestPlanByNameAndProjectName(
     testPlanName: string,
     projectName: string,
-  ): Promise<string> {
+  ): Promise<TestPlanSelectType> {
     try {
       const query = this.conn.query.testPlans.findFirst({
         where: and(
@@ -35,7 +35,7 @@ export class TestPlanRepositoryV2 implements ITestPlanRepository {
       });
       const testPlan = await query.execute();
       if (testPlan) {
-        return testPlan.location;
+        return testPlan;
       } else {
         throw new DatabaseOperationError('Cannot find Test Plan.');
       }

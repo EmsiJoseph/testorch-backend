@@ -7,30 +7,34 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { addTestPlanV2UseCase } from 'src/core/application/use-cases/add-test-plan-v2.use-case';
 import { addTestPlanUseCase } from 'src/core/application/use-cases/add-test-plan.use-case';
 import { getTestPlanssUseCase } from 'src/core/application/use-cases/get-test-plans.use-case';
-import { startTestPlanV2UseCase } from 'src/core/application/use-cases/start-test-plan-v2.use-case';
+import { startTestPlanV3UseCase } from 'src/core/application/use-cases/start-test-plan-v3.use-case';
 import { TeamRepository } from 'src/core/infrastructure/repositories/team/team.repository';
 import { TestPlanRepositoryV2 } from 'src/core/infrastructure/repositories/test-plan/test-plan.repository-v2';
 import { UsersRepository } from 'src/core/infrastructure/repositories/users/users.repository';
 import { GitHubService } from 'src/core/infrastructure/services/github/github.service';
-import { JmeterService } from 'src/core/infrastructure/services/jmeter/jmeter.service';
-import { SetupService } from 'src/core/infrastructure/services/setup.service';
+import { JenkinsService } from 'src/core/infrastructure/services/jenkins/jenkins.service'; // Import JenkinsService
 import { AuthorizationGuard } from 'src/foundation/guards/authorization.guard';
-import { AddTestPlanDto, AddTestPlanV2Dto } from '../../dto/test-plan.dto';
+import {
+  AddTestPlanDto,
+  AddTestPlanV2Dto,
+  StartTestV2Dto,
+} from '../dto/test-plan.dto';
+import { GatewayService } from 'src/core/infrastructure/services/gateway/gateway.service';
+import { KubernetesV2Service } from 'src/core/infrastructure/services/kubernetes/kubernetes-v2.service';
 
 @Controller('test-plan-management')
 export class TestPlanController {
   constructor(
     private readonly testPlanRepo: TestPlanRepositoryV2,
     private readonly userRepo: UsersRepository,
-    private readonly jmeterService: JmeterService, // Inject JmeterService
     private readonly githubService: GitHubService, // Inject GitHubService
     private readonly teamRepo: TeamRepository,
-    private readonly configService: ConfigService,
-    private readonly setupService: SetupService,
+    private readonly jenkinsService: JenkinsService, // Inject JenkinsService
+    private readonly kubernetesv2Service: KubernetesV2Service,
+    private readonly gatewayService: GatewayService
   ) {}
 
   @UseGuards(AuthorizationGuard)
@@ -56,9 +60,6 @@ export class TestPlanController {
       this.userRepo,
       this.githubService,
       this.teamRepo,
-      this.jmeterService,
-      this.setupService,
-      this.configService,
     );
     return {
       message: 'Test plan added successfully',
@@ -73,7 +74,6 @@ export class TestPlanController {
     @Request() req,
   ) {
     const userId = req.auth.sub; // Assuming the user ID is in the 'sub' field
-    console.log(projectName);
     const testPlans = await getTestPlanssUseCase(
       projectName,
       userId,
@@ -87,34 +87,19 @@ export class TestPlanController {
   }
 
   @UseGuards(AuthorizationGuard)
-  @Post('start-test')
-  async startTest(
-    @Body() startTestDto: { fileName: string; workerNodes: number },
-  ) {
-    const { fileName, workerNodes } = startTestDto;
-    const jmxUrl = this.testPlanRepo.getFilePath(fileName);
-    console.log(jmxUrl);
-    const result = await this.jmeterService.startTest(jmxUrl, workerNodes);
-    return {
-      message: 'Test started successfully',
-      ...result,
-    };
-  }
-
-  @UseGuards(AuthorizationGuard)
-  @Post('start-test-v2')
+  @Post('start-test-v3')
   async startTestV2(
-    @Body() startTestDto: { testPlanName: string; workerNodes: number, projectName: string },
+    @Body() startTestDto: StartTestV2Dto, // Use the new DTO
   ) {
-    console.log(startTestDto);
-    const { testPlanName, workerNodes, projectName} = startTestDto;
-
-    const result = await startTestPlanV2UseCase(
-      testPlanName,
-      workerNodes,
-      projectName,
+    const result = await startTestPlanV3UseCase(
+      startTestDto,
       this.testPlanRepo,
-      this.jmeterService,
+      this.githubService,
+      this.jenkinsService, // Pass JenkinsService to the use case
+      this.userRepo,
+      this.teamRepo,
+      this.gatewayService,
+      this.kubernetesv2Service
     );
     return result;
   }

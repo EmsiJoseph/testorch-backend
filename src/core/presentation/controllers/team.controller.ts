@@ -5,17 +5,16 @@ import { SetupService } from 'src/core/infrastructure/services/setup.service';
 import { AuthorizationGuard } from '../../../foundation/guards/authorization.guard';
 import { createTeamUseCase } from '../../application/use-cases/create-team.use-case';
 import { TeamRepository } from '../../infrastructure/repositories/team/team.repository';
-import { InfluxdbService } from '../../infrastructure/services/influxdb/influxdb.service';
 import { CreateTeamDto } from '../dto/team.dto';
 
 @Controller('team-management')
 export class TeamController {
   constructor(
     private readonly teamRepo: TeamRepository,
-    private readonly influxdbService: InfluxdbService,
+
     private readonly userRepo: UsersRepository,
     private readonly setupService: SetupService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   @UseGuards(AuthorizationGuard)
@@ -24,10 +23,7 @@ export class TeamController {
     const result = await createTeamUseCase(
       createTeamDto,
       this.teamRepo,
-      this.influxdbService,
       this.userRepo,
-      this.setupService,
-      this.configService,
     );
     return { message: 'Team created successfully', data: result };
   }

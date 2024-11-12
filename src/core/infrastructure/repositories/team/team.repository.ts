@@ -20,7 +20,6 @@ export class TeamRepository implements ITeamRepository {
 
   async createTeam(
     createTeamDto: CreateTeamDto,
-    influxDbOrgId: string,
     userId: string,
   ): Promise<TeamSelectType> {
     try {
@@ -32,7 +31,6 @@ export class TeamRepository implements ITeamRepository {
           id: id,
           name: createTeamDto.name,
           description: createTeamDto.description,
-          influxDb_org_id: influxDbOrgId,
           auth0_org_id: createTeamDto.auth0_org_id,
         })
         .returning(); // Get the created team back

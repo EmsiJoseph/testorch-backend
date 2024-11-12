@@ -31,7 +31,6 @@ export class Auth0Service {
     try {
       const { email } = signUpDto;
       // Fetch users with the specified email
-      console.log(email);
       const usersResponse = await this.managementClient.users.getAll({
         q: `email:"${email}"`,
         search_engine: 'v3',
