@@ -23,14 +23,12 @@ export class ProjectRepository implements IProjectRepository {
     createProjectDto: CreateProjectDto,
     teamId: string,
     createdBy: string, // Add createdBy parameter
-    influxDbBucketId: string,
   ): Promise<ProjectSelectType> {
     try {
       const query = this.conn
         .insert(projects)
         .values({
           name: createProjectDto.name,
-          influxDb_bucket_id: influxDbBucketId,
           description: createProjectDto.description,
           team_id: teamId,
           created_by: createdBy, // Include created_by

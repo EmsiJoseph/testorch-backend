@@ -26,5 +26,5 @@ export interface ITestPlanRepository {
 
   processBase64File(uploadFileDto: AddTestPlanDto): string;
 
-  getDownloadUrl(testPlanName: string, projectName: string): Promise<string>;
+  getTestPlanByNameAndProjectName(testPlanName: string, projectName: string): Promise<TestPlanSelectType>;
 }

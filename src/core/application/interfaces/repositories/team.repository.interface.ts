@@ -4,7 +4,6 @@ import { CreateTeamDto } from '../../../presentation/dto/team.dto';
 export interface ITeamRepository {
   createTeam(
     createTeamDto: CreateTeamDto,
-    influxDbOrgId: string,
     userId: string,
   ): Promise<TeamSelectType>;
 

@@ -10,3 +10,4 @@ export const TestPlanSelectSchema = createSelectSchema(testPlans, {});
 // Usage in a service or controller for validation
 export type TestPlanInsertType = z.infer<typeof TestPlanInsertSchema>;
 export type TestPlanSelectType = z.infer<typeof TestPlanSelectSchema>;
+

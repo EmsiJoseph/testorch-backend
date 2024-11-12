@@ -37,7 +37,6 @@ export const sessions = pgTable('session', {
 
 export const teams = pgTable('team', {
   id: text('id').primaryKey().notNull(),
-  influxDb_org_id: varchar('influxdb_org_id').notNull(), // InfluxDB organization ID
   auth0_org_id: varchar('auth0_org_id').notNull(), // Auth0 Organization ID
   name: varchar('name').notNull(),
   description: text('description'),
@@ -62,7 +61,6 @@ export const projects = pgTable('project', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: varchar('name').notNull(), // Project name
   description: varchar('description'), // Optional description
-  influxDb_bucket_id: text('influxdb_bucket_id').notNull(), // InfluxDB organization ID
   team_id: uuid('team_id').notNull(), // Project can belong to a team
   created_by: text('created_by').notNull(), // The user who created the project
   created_at: timestamp('created_at').defaultNow(),
@@ -106,3 +104,4 @@ export const influxdbCredentials = pgTable('influxdb_credentials', {
     .$onUpdateFn(() => new Date()),
 });
 
+// team_activities table

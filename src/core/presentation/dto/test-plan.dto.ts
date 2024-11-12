@@ -41,3 +41,19 @@ export class AddTestPlanV2Dto {
   auth0_org_id: string;
 
 }
+
+export class StartTestV2Dto {
+  testPlanName: string;
+  email: string;
+  auth0_org_id: string;
+  workerNodes: number;
+  projectName: string;
+  protocol: string;
+  host: string;
+  basePath: string;
+  threadCount: number;
+  startUpTime: number;
+  holdLoadTime: number;
+  shutdownTime: number;
+  targetThroughputPerMin: number;
+}

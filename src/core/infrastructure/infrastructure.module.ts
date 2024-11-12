@@ -1,10 +1,7 @@
 import { HttpModule } from '@nestjs/axios'; // Import HttpModule
 import { forwardRef, Module } from '@nestjs/common';
 import { KubernetesClient } from './client/kubernetes-client';
-import { GrafanaService } from './services/grafana/grafana.service';
-import { InfluxdbService } from './services/influxdb/influxdb.service';
-import { JmeterService } from './services/jmeter/jmeter.service';
-import { KubernetesService } from './services/kubernetes/kubernetes.service';
+import { JenkinsService } from './services/jenkins/jenkins.service'; // Import JenkinsService
 
 import { USERS_REPOSITORY_TOKEN } from '../application/interfaces/repositories/users.repository.interface';
 import { InfluxdbClient } from './client/influxdb-client';
@@ -16,13 +13,14 @@ import { TestPlanRepositoryV2 } from './repositories/test-plan/test-plan.reposit
 import { UsersRepository } from './repositories/users/users.repository';
 import { Auth0Service } from './services/auth0/auth0.service';
 import { GitHubService } from './services/github/github.service';
-import { JmeterGateway } from './services/jmeter/jmeter.gateway';
+import { KubernetesV2Service } from './services/kubernetes/kubernetes-v2.service';
 import { SetupService } from './services/setup.service';
+import { GatewayService } from './services/gateway/gateway.service';
 
 @Module({
   imports: [
     forwardRef(() => InfrastructureModule), // Use forwardRef to resolve circular dependencies
-    HttpModule,
+    HttpModule, // Ensure HttpModule is imported
     NestDrizzleModule.forRootAsync({
       useFactory: () => {
         return {
@@ -35,11 +33,9 @@ import { SetupService } from './services/setup.service';
     }),
   ],
   providers: [
-    InfluxdbService,
     InfluxdbClient, // Register InfluxdbClient as a provider
-    KubernetesService,
-    GrafanaService,
-    JmeterService,
+    KubernetesV2Service,
+    JenkinsService, // Register JenkinsService as a provider
     KubernetesClient,
     TeamRepository,
     ProjectRepository,
@@ -52,25 +48,23 @@ import { SetupService } from './services/setup.service';
     UsersRepository,
     Auth0Service,
     TestPlanRepositoryV2, // Register TestPlanService as a provider
-    JmeterGateway,
     SetupService,
+    GatewayService,
   ],
   exports: [
     TeamRepository,
     UsersRepository,
     ProjectRepository,
-    GrafanaService,
-    JmeterService,
-    InfluxdbService,
-    KubernetesService,
+    KubernetesV2Service,
+    JenkinsService, // Export JenkinsService
     InfluxdbClient,
     TestPlanRepositoryV2, // Export TestPlanRepositoryV2
     GitHubService,
     USERS_REPOSITORY_TOKEN,
     Auth0Service,
     TestPlanRepositoryV2,
-    JmeterGateway,
-    SetupService
+    SetupService,
+    GatewayService,
   ],
 })
 export class InfrastructureModule {}
